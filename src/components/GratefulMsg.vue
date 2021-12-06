@@ -1,5 +1,5 @@
 <template>
-  <div class="grateful-Maincontainer">
+  <div  class="grateful-Maincontainer" >
       <div class="grateful-content">
           <div class="icon-container">
               <i class="fas fa-check"></i>
@@ -8,7 +8,7 @@
           <p class="msg-p">Your pledge birng us one step closer to sharing Mastercraft Bamboo Monitor Riser worldwide. You will get an email once our campaign is completed</p>
           <div>
 
-             <button @click="hideComponent(this)">Got it!</button>
+             <button @click="hideComponent()">Got it!</button>
           </div>
       </div>
   </div>
@@ -21,8 +21,9 @@ export default {
     methods:{
 
         hideComponent(){
-            let elt = document.getElementsByClassName('grateful-Maincontainer')[0]
-            elt.classList.add('hide');
+            let elt = document.getElementById('app')
+            elt.classList.remove('allScreen');
+            this.$emit('displayGratefulMsg',false)
         }
     }
 }
@@ -44,7 +45,7 @@ export default {
             justify-content: center;
             align-items: center;
             position: absolute;
-            display: none;
+            top: 0;
             .grateful-content{
                 height: 60vh;
                 width: 40vw;

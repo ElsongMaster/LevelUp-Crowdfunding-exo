@@ -1,15 +1,33 @@
 <template>
-  <div :class=" selected?'pledecardselect select-card':'pledecardselect'">
+  <div
+    :class="
+      pledgeData.isSelected
+        ? 'pledecardselect select-card'
+        : pledgeData.days == 0
+        ? ' pledecardselect zero-days'
+        : 'pledecardselect'
+    "
+  >
     <div class="ContentMain">
-      <div @click="checkedCheckbox()"  class="checkbox-container"><span class="chekbox"> <span v-if="selected" class="checked"></span></span></div>
+      <div @click="checkedCheckbox(index)" class="checkbox-container">
+        <span class="chekbox">
+          <span v-if="pledgeData.isSelected" class="checked"></span
+        ></span>
+      </div>
       <div class="textContent">
         <div class="title-container">
           <div class="title">
-            <span class="title-name">Pledge with no reward</span>
-            <span class="price"> Pledge $25 or more</span>
+            <span class="title-name" @click="checkedCheckbox(index)">{{
+              pledgeData.nom
+            }}</span>
+            <span v-if="pledgeData.price != null" class="price">
+              Pledge ${{ pledgeData.price }} or more</span
+            >
           </div>
           <div class="days-container">
-            <span class="days">101<span class="left">left</span></span>
+            <span v-if="pledgeData.days != null" class="days"
+              >{{ pledgeData.days }}<span class="left">left</span></span
+            >
           </div>
         </div>
         <p>
@@ -19,11 +37,16 @@
         </p>
       </div>
     </div>
-    <div v-if="selected" class="inputPledge-container">
-      <p>Enter your pledge</p>
+    <div
+      v-if="pledgeData.isSelected "
+      class="inputPledge-container"
+    >
+      <p v-show=" pledgeData.isGivenReward">Enter your pledge</p>
       <div class="input-content">
-        <div>$ <input type="text" name="" value="25" id="" /></div>
-        <button>Continue</button>
+        <div  v-show=" pledgeData.isGivenReward">
+          $ <input id="priceChoose" type="text" name="" :value="pledgeData.price"  />
+        </div>
+        <button @click="sendPriceChoose()">Continue</button>
       </div>
     </div>
   </div>
@@ -32,24 +55,53 @@
 <script>
 export default {
   name: "PledgeCardSelect",
+  props: {
+    pledgeData: Object,
+    isGivenReward: Boolean,
+    selected:Boolean,
+    Index:Number
+  },
+
 
   data() {
     return {
-      selected: false,
+      indexPledge:null
     };
   },
 
-  methods:{
-      checkedCheckbox(){
-          if(!this.selected){
-              
-              this.selected = true;
-          }else{
-              this.selected = false;
+created: function(){
+    this.selected = this.pledgeData.isSelected;
+    this.indexPledge = this.pledgeData.index
+},
 
-          }
+  computed:{
+      getIsSelected(){
+
+          let isSelected = this.pledgeData.isSelected;
+          return isSelected
+
       }
-  }
+  },
+
+  methods: {
+    checkedCheckbox() {
+    //     console.log('checkedCheckbox',this.indexPledge)
+    //   if (!this.selected) {
+    //     this.selected = true;
+    //   } else {
+    //     this.selected = false;
+    //   }
+      this.$emit('checkBoxIndex',this.indexPledge)
+    },
+
+    sendPriceChoose(){
+
+        let price = document.getElementById('priceChoose').value!=''?document.getElementById('priceChoose').value:null;
+        this.$emit('getPrice',[true, price] )
+    }
+
+
+  },
 };
 </script>
 
@@ -62,6 +114,7 @@ export default {
   border-radius: 5px;
   display: flex;
   flex-direction: column;
+  margin: 10px 0;
   .ContentMain {
     display: flex;
     .checkbox-container {
@@ -79,13 +132,12 @@ export default {
         justify-content: center;
         align-items: center;
 
-        .checked{
-            height: 70%;
+        .checked {
+          height: 70%;
 
-            width: 70%;
-            background-color:rgb(21, 182, 171) ;
-            border-radius: 50%;
-
+          width: 70%;
+          background-color: rgb(21, 182, 171);
+          border-radius: 50%;
         }
       }
       .chekbox:hover {
@@ -109,8 +161,14 @@ export default {
           width: 60%;
           display: flex;
           justify-content: space-between;
+
           .title-name {
             font-weight: bold;
+          }
+          .title-name:hover {
+            cursor: url("data:image/x-icon;base64,AAACAAEAICACAAAAAAAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAf4AAAPVAAAH1QAAB9WAAA3VgAAd/4AAGbaAAAG2gAABtgAAAYAAAAGAAAABgAAAAYAAAAAAAAA//////////////////////////////////////////////////////////////////////////////////////gD///4A///8AP//+AB///AAf//wAD//4AA//8AAP//AAD//5AA///wAf//8Af///D////w////8P////n///8="),
+              auto;
+            color: rgb(21, 182, 171);
           }
           .price {
             color: rgb(21, 182, 171);
@@ -135,31 +193,32 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    p{
-        padding-left: 10px;
+    p {
+      padding-left: 10px;
     }
     .input-content {
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
-      div{
-          margin-right: 5px;
-          display: flex;
-          border:2px solid rgb(231, 222, 222);
-          padding: 5px;
-          width: 80px;
-          border-radius: 30px;
-          justify-content: center;
-          font-size: 14px;
-          color:rgb(231, 222, 222) ;
-          input{
-              color: black;
-              padding-left: 5px;
-              width: fit-content;
-              width: 30px;
-              background-color: transparent;
-          }
+      div {
+        margin-right: 5px;
+        display: flex;
+        border: 2px solid rgb(231, 222, 222);
+        padding: 5px;
+        width: 80px;
+        border-radius: 30px;
+        justify-content: center;
+        font-size: 14px;
+        color: rgb(231, 222, 222);
+        input {
+          color: black;
+          padding-left: 5px;
+          width: fit-content;
+          width: 30px;
+          background-color: transparent;
+          outline: none;
+        }
       }
       button {
         background-color: rgb(31, 179, 169);
@@ -174,6 +233,27 @@ export default {
       }
     }
   }
+}
+
+.pledecardselect {
+  .ContentMain {
+    .textContent {
+      .title-container {
+        .title {
+          .title-name:hover {
+            cursor: url("data:image/x-icon;base64,AAACAAEAICACAAAAAAAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAf4AAAPVAAAH1QAAB9WAAA3VgAAd/4AAGbaAAAG2gAABtgAAAYAAAAGAAAABgAAAAYAAAAAAAAA//////////////////////////////////////////////////////////////////////////////////////gD///4A///8AP//+AB///AAf//wAD//4AA//8AAP//AAD//5AA///wAf//8Af///D////w////8P////n///8="),
+              auto;
+            color: rgb(21, 182, 171);
+          }
+        }
+      }
+    }
+  }
+}
+
+.zero-days {
+  opacity: 0.5;
+  pointer-events: none;
 }
 .select-card {
   border-color: rgb(21, 182, 171) !important;

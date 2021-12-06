@@ -23,9 +23,13 @@
           A beautiful & handcraft Monitor stand to reduce neck and eye stran.
         </p>
         <div class="content-btn">
-          <button>Back this project</button>
+          <button class="back-btn" @click="displayOptions()">
+            Back this project
+          </button>
 
-          <span><img src="./assets/icon-bookmark.svg" alt="" />Bookmarked</span>
+          <button @click="bookmarkedPage()">
+            <i class="fas fa-bookmark"></i>Bookmarked
+          </button>
         </div>
       </div>
 
@@ -33,7 +37,7 @@
         <div class="numbers-content">
           <div class="number-card">
             <div>
-              <p class="number">$89,914</p>
+              <p class="number">${{ number }}</p>
               <p class="total">of $100,000 backed</p>
             </div>
           </div>
@@ -75,29 +79,44 @@
         </p>
         <div class="main-container-pledgcard">
           <PledgeCard
-            v-for="(pledgeData, index) in tabPledge"
+            v-for="(pledgeData, index) in dataPledgeCard"
             :key="index"
             :pledgeData="pledgeData"
+            :index="index"
+            @getIndexSelected="displayIndex"
           />
         </div>
       </div>
     </div>
-    <div class="PledgeCardSelect-container">
+    <div v-if="displayBackOption" class="PledgeCardSelect-container">
       <div class="mainContent-PladgeCardSelect">
         <div class="title-container">
           <h2>Back this project</h2>
           <div class="container-close">
-            <i class="fas fa-times"></i>
+            <button @click="hideOptions()">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
         </div>
         <p>
           Want to support us in bringing Mastercraft Bamboo Monitor Riser out in
           the world?
         </p>
-      <PledgeCardSelect />
+        <PledgeCardSelect
+          v-for="(pledgeData, index) in tabPledge"
+          :key="index"
+          :pledgeData="pledgeData"
+          :selected="false"
+          :index="index"
+          @checkBoxIndex="resetIsSelected"
+          @getPrice="updateData"
+        />
       </div>
     </div>
-    <GratefulMsg />
+    <GratefulMsg
+      v-if="displayGratefulMsg"
+      @displayGratefulMsg="updateGratefulMsg"
+    />
   </div>
 </template>
 
@@ -116,24 +135,147 @@ export default {
 
   data() {
     return {
+      displayBackOption: false,
+      displayGratefulMsg: false,
+      number: 89914,
       tabPledge: [
+        {
+          nom: "Pledge with no reward",
+          price: null,
+          days: null,
+          isGivenReward: false,
+          isSelected: false,
+          index: 0,
+        },
         {
           nom: "Bamboo Stand",
           price: 25,
           days: 101,
+          isGivenReward: true,
+          isSelected: false,
+          index: 1,
         },
         {
           nom: "Black Edition Stand",
           price: 75,
           days: 64,
+          isGivenReward: true,
+          isSelected: false,
+          index: 2,
         },
         {
           nom: "Mahogamy Special Edition",
           price: 200,
           days: 0,
+          isGivenReward: true,
+          isSelected: false,
+          index: 3,
         },
       ],
+      indexOptSelected: null,
     };
+  },
+
+  methods: {
+    displayOptions() {
+      this.displayBackOption = true;
+      let heightElt = null;
+      setTimeout(() => {
+        let elt = document.getElementsByClassName(
+          "PledgeCardSelect-container"
+        )[0];
+        console.log(elt.clientHeight);
+        heightElt = elt.clientHeight - 100;
+        let styleNode = "height:" + heightElt + "px; overflow:hidden;";
+        console.log(styleNode);
+        let appNode = document.getElementById("app");
+        appNode.style = styleNode;
+        //  console.log(elt.style)
+        console.log(appNode);
+      }, 500);
+    },
+    hideOptions() {
+      this.displayBackOption = false;
+      let appNode = document.getElementById("app");
+      appNode.style = "";
+      this.tabPledge.forEach((elt) => {
+        elt.isSelected = false;
+      });
+    },
+
+    bookmarkedPage() {
+      let btn = document.getElementsByClassName("fa-bookmark")[0];
+      btn = btn.parentElement;
+      btn.classList.add("btn-Bookmark-visited");
+      // const urlPage = window.location.href.split('?')[0]
+      // console.log(urlPage)
+      // var createBookmark = browser.bookmarks.create({
+      //   title: "bookmarks.create() on MDN",
+      //   url: urlPage
+      // });
+
+      // createBookmark.then(onCreated);
+    },
+    displayIndex(index) {
+      this.indexOptSelected = index + 1;
+      console.log("displayIndex", index);
+      this.tabPledge[index + 1].isSelected = true;
+
+      let btnBack = document.getElementsByClassName("back-btn")[0];
+
+      btnBack.click();
+    },
+
+    resetIsSelected(index) {
+      console.log("resetIsSelected", index);
+      for (let i = 0; i < this.tabPledge.length; i++) {
+        if (i != index) {
+          this.tabPledge[i].isSelected = false;
+        } else {
+          this.tabPledge[i].isSelected = true;
+        }
+      }
+    },
+    updateGratefulMsg(bool) {
+      let appNode = document.getElementById("app");
+      this.displayGratefulMsg = bool;
+      if (this.displayBackOption) {
+        this.displayBackOption = false;
+        console.log("updateGratefulMsg");
+        if (appNode.classList.contains("allScreen")) {
+          appNode.classList.remove("allScreen");
+        } else {
+          appNode.style="";
+          appNode.classList.add("allScreen");
+        }
+      }
+    },
+
+    updateData(tab) {
+      console.log("updateData", tab);
+      this.number += tab[1] !=null? parseInt(tab[1]):0;
+      this.updateGratefulMsg(tab[0]);
+      let width = Math.round((this.number / 100000) * 100);
+      this.updateBarProgress(width);
+    },
+
+    updateBarProgress(width) {
+      var elem = document.getElementById("myBar");
+      elem.style.width = width + "%";
+    },
+  },
+
+  computed: {
+    dataPledgeCard() {
+      let tab = [];
+      for (let i = 0; i < this.tabPledge.length; i++) {
+        if (i > 0) {
+          tab.push(this.tabPledge[i]);
+        }
+      }
+
+      return tab;
+    },
   },
 };
 
@@ -243,11 +385,39 @@ export default {
           height: fit-content;
           width: fit-content;
         }
-        button {
+        button:first-child {
           color: white;
-          background-color: rgb(20, 121, 115);
+          background-color: rgb(25, 170, 160);
           padding: 0.5em 2em;
           border-radius: 60px;
+        }
+        button:nth-child(2) {
+          position: relative;
+          color: rgb(25, 170, 160);
+          background-color: rgb(235, 226, 226);
+          padding: 0.5em 3em;
+          border-radius: 60px;
+
+          i {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background-color: rgb(25, 170, 160);
+            width: 40px;
+            height: 40px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+          }
+        }
+
+        button:hover {
+          cursor: url("data:image/x-icon;base64,AAACAAEAICACAAAAAAAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAf4AAAPVAAAH1QAAB9WAAA3VgAAd/4AAGbaAAAG2gAABtgAAAYAAAAGAAAABgAAAAYAAAAAAAAA//////////////////////////////////////////////////////////////////////////////////////gD///4A///8AP//+AB///AAf//wAD//4AA//8AAP//AAD//5AA///wAf//8Af///D////w////8P////n///8="),
+            auto;
+          background-color: rgb(20, 121, 115);
+          color: white;
         }
         span {
           display: flex;
@@ -329,13 +499,15 @@ export default {
     }
   }
   .PledgeCardSelect-container {
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
     background-color: rgb(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
     position: absolute;
+    padding: 60px 0;
+    // overflow: hidden;
     .mainContent-PladgeCardSelect {
       width: 50vw;
       height: fit-content;
@@ -344,9 +516,9 @@ export default {
       padding: 30px;
       .title-container {
         display: flex;
-        h2,.container-close{
+        h2,
+        .container-close {
           width: 50%;
-
         }
         h2 {
           font-weight: bold;
@@ -354,8 +526,16 @@ export default {
         .container-close {
           display: flex;
           justify-content: flex-end;
-          i {
-            color: rgb(163, 153, 153);
+          button {
+            i {
+              color: rgb(163, 153, 153);
+              // color: blue;
+              // border: 2px solid;
+            }
+            i:hover {
+              cursor: url("data:image/x-icon;base64,AAACAAEAICACAAAAAAAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAf4AAAPVAAAH1QAAB9WAAA3VgAAd/4AAGbaAAAG2gAABtgAAAYAAAAGAAAABgAAAAYAAAAAAAAA//////////////////////////////////////////////////////////////////////////////////////gD///4A///8AP//+AB///AAf//wAD//4AA//8AAP//AAD//5AA///wAf//8Af///D////w////8P////n///8="),
+                auto !important;
+            }
           }
         }
       }
@@ -363,6 +543,41 @@ export default {
         color: rgb(163, 153, 153);
         font-size: 13px;
         margin: 10px 0;
+      }
+    }
+  }
+  .hide {
+    display: none !important;
+  }
+}
+.allScreen {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+#app {
+  .general-info {
+    .content-btn {
+      .btn-Bookmark-visited {
+        position: relative;
+        color: rgb(112, 112, 112);
+        background-color: rgb(235, 226, 226) !important;
+        padding: 0.5em 3em;
+        border-radius: 60px;
+
+        i {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          background-color: rgb(112, 112, 112) !important;
+          width: 40px;
+          height: 40px;
+          color: rgb(177, 177, 177) !important;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-radius: 50%;
+        }
       }
     }
   }

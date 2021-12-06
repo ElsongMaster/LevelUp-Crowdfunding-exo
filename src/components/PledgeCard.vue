@@ -1,5 +1,5 @@
 <template>
-  <div class="container-pledgecard" :class="pledgeData.days>0?'container-pledgecard':'container-pledgecard zero-days'">
+  <div :class="pledgeData.days>0?'container-pledgecard':'container-pledgecard zero-days'">
       <div class="header-pledge">
           <span class="pledgeName">{{pledgeData.nom}}</span>
           <span class="pledgePrice">Pledge ${{pledgeData.price}} or more</span>
@@ -7,7 +7,7 @@
       <p class="pledge-text">You get an ergonomic stand made of natural bamboo. You've helped us launch our promotional campagn, and you'll be added to a special Backer member list .</p>
       <div class="pledge-footer">
           <span class="days">{{pledgeData.days}} <span class="left">left</span></span>
-          <button :class="pledgeData.days >0?'btn-reward':'btn-reward zero-days-bg'">Select Reward</button>
+          <button :class="pledgeData.days >0?'btn-reward':'btn-reward zero-days-bg'" @click="sendIndexSelected(index)">Select Reward</button>
       </div>
   </div>
 </template>
@@ -17,8 +17,17 @@ export default {
     name:'PledgeCard',
     props:{
         pledgeData:Object,
+        index:Number
         
     },
+
+    methods:{
+
+        sendIndexSelected(index){
+            console.log('sendIndexSelected')
+            this.$emit('getIndexSelected',index)
+        }
+    }
 
 
 }
@@ -83,11 +92,14 @@ export default {
             .btn-reward:hover{
                 cursor: url("data:image/x-icon;base64,AAACAAEAICACAAAAAAAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAf4AAAPVAAAH1QAAB9WAAA3VgAAd/4AAGbaAAAG2gAABtgAAAYAAAAGAAAABgAAAAYAAAAAAAAA//////////////////////////////////////////////////////////////////////////////////////gD///4A///8AP//+AB///AAf//wAD//4AA//8AAP//AAD//5AA///wAf//8Af///D////w////8P////n///8="),
                     auto;
+                background-color: rgb(8, 141, 132) ;
+
             }
         }
     }
     .zero-days{
         opacity: 0.5;
+        pointer-events: none;
     }
     .zero-days-bg{
         background-color: gray !important;
